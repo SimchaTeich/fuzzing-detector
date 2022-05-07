@@ -23,7 +23,7 @@ def ssh_fuzzing_dedector(ssh_pkt):
 :   rtype: None
     """
     if Raw in ssh_pkt:
-        if Detector.is_gibberish(ssh_pkt[Raw].load.decode()):
+        if Detector.is_gibberish(ssh_pkt[Raw].load):
             print("fuzzing detected!")
             exit()
 
