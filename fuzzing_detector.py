@@ -1,9 +1,7 @@
 from scapy.all import *
 
 
-Detector = detector.create_from_model('big.model')
 SSH_PORT = 22
-
 
 # here we saving clients that pass the fuzz check.
 OK_CLIENTS_PORTS = []
