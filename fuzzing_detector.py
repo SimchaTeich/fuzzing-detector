@@ -1,6 +1,5 @@
 from scapy.all import *
 
-
 SSH_PORT = 22
 
 # here we saving clients that pass the fuzz check.
@@ -11,7 +10,7 @@ def is_income_SSH_packet(pkt):
     """
 :   param pkt: packet was sniffed.
 :   type pkt: scapy packet
-:   return True if packet is income ssh.
+:   return: True if packet is income ssh.
 :   rtype: Boolian.
     """
     if TCP in pkt:
