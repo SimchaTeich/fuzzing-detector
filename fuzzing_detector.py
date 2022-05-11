@@ -1,35 +1,53 @@
 from scapy.all import *
-from gibberish_detector import detector
 
 
 Detector = detector.create_from_model('big.model')
 SSH_PORT = 22
 
 
-def is_SSH_packet(pkt):
+# here we saving clients that pass the fuzz check.
+OK_CLIENTS_PORTS = []
+
+
+def is_income_SSH_packet(pkt):
     """
-:   function return True if packet is ssh type. 
+:   param pkt: packet was sniffed.
+:   type pkt: scapy packet
+:   return True if packet is income ssh.
+:   rtype: Boolian.
     """
     if TCP in pkt:
-        return pkt[TCP].dport == SSH_PORT or pkt[TCP].sport == SSH_PORT
+        return pkt[TCP].dport == SSH_PORT
     return False
 
 
 def ssh_fuzzing_dedector(ssh_pkt):
     """
-:   function stop the entire program if 'gibberish'
-:   is the contant of the ssh_packet   
-:   param ssh_pkt: ssh packet
+:   function stop the entire program if the
+:   payload of the first ssh packet is not
+:   a valid identification string.   
+:   param ssh_pkt: scapy income ssh packet
 :   rtype: None
     """
     if Raw in ssh_pkt:
-        if Detector.is_gibberish(ssh_pkt[Raw].load):
-            print("fuzzing detected!")
-            exit()
+       
+        # check just for new clients.
+        if ssh_pkt[TCP].sport not in OK_CLIENTS_PORTS:
+            
+            # check the 'protocol identification string' massage.
+            if ssh_pkt[Raw].load.startswith(b"SSH-2.0-") and ssh_pkt[Raw].load.endswith(b"\r\n"):
+                
+                # append client to list if is OK (= not fuzzing.)
+                OK_CLIENTS_PORTS.append(ssh_pkt[TCP].sport)
+            
+            # when the client is newer, but using the protocol is uncorrect.
+            else:
+                print("fuzzing detected!")
+                exit()
 
 
 def main():
-    sniff(lfilter = is_SSH_packet, prn = ssh_fuzzing_dedector)
+    sniff(lfilter = is_income_SSH_packet, prn = ssh_fuzzing_dedector)
     
 
 if __name__ == '__main__':
