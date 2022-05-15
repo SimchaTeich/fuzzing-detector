@@ -11,7 +11,7 @@ def is_income_SSH_packet(pkt):
 :   param pkt: packet was sniffed.
 :   type pkt: scapy packet
 :   return: True if packet is income ssh.
-:   rtype: Boolian.
+:   rtype: bool.
     """
     if TCP in pkt:
         return pkt[TCP].dport == SSH_PORT
