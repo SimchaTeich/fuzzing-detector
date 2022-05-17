@@ -1,9 +1,17 @@
 from scapy.all import *
 
 SSH_PORT = 22
+MAX_LEN = 255 # according to the RFC of SSH.
 
 # here we saving clients that pass the fuzz check.
 OK_CLIENTS_PORTS = []
+
+
+FUZZING_DETECTED = """
+╔═╗┬ ┬┌─┐┌─┐┬┌┐┌┌─┐  ┌┬┐┌─┐┌┬┐┌─┐┌─┐┌┬┐┌─┐┌┬┐
+╠╣ │ │┌─┘┌─┘│││││ ┬   ││├┤  │ ├┤ │   │ ├┤  ││
+╚  └─┘└─┘└─┘┴┘└┘└─┘  ─┴┘└─┘ ┴ └─┘└─┘ ┴ └─┘─┴┘
+"""
 
 
 def is_income_SSH_packet(pkt):
@@ -31,15 +39,17 @@ def ssh_fuzzing_dedector(ssh_pkt):
         # check just for new clients.
         if ssh_pkt[TCP].sport not in OK_CLIENTS_PORTS:
             
+            data = ssh_pkt[Raw].load
+            
             # check the 'protocol identification string' massage.
-            if ssh_pkt[Raw].load.startswith(b"SSH-2.0-") and ssh_pkt[Raw].load.endswith(b"\r\n"):
+            if len(data) <= MAX_LEN and data.startswith(b"SSH-2.0-") and data.endswith(b"\r\n"):
                 
                 # append client to list if is OK (= not fuzzing.)
                 OK_CLIENTS_PORTS.append(ssh_pkt[TCP].sport)
             
             # when the client is newer, but using the protocol is uncorrect.
             else:
-                print("fuzzing detected!")
+                print(FUZZING_DETECTED)
                 exit()
 
 
